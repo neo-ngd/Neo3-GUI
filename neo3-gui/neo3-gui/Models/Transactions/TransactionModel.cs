@@ -33,7 +33,7 @@ namespace Neo.Models.Transactions
 
         public UInt256 TxId { get; set; }
         public UInt256 BlockHash { get; set; }
-        public uint BlockHeight { get; set; }
+        public uint? BlockHeight { get; set; }
         public DateTime? BlockTime => Timestamp?.FromTimestampMS().ToLocalTime();
         public ulong? Timestamp { get; set; }
         public List<TransferModel> Transfers { get; set; }
@@ -52,7 +52,7 @@ namespace Neo.Models.Transactions
         public byte Version { get; set; }
 
 
-        public uint Confirmations { get; set; }
+        public uint? Confirmations { get; set; }
 
         public int Size { get; set; }
 

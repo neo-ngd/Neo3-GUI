@@ -13,7 +13,8 @@ namespace Neo.Common.Json
     {
         public override BigInteger Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            throw new NotImplementedException();
+            var value= reader.GetString();
+            return BigInteger.Parse(value);
         }
 
         public override void Write(Utf8JsonWriter writer, BigInteger value, JsonSerializerOptions options)

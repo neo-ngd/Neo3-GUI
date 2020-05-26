@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Neo.Models.Contracts;
 using Neo.SmartContract;
 using Neo.VM;
 
@@ -12,66 +14,80 @@ namespace Neo.Common.Utility
 {
     public class OpCodeConverter
     {
+        private static readonly Dictionary<uint, string> _interopServiceMap;
+        private static readonly int[] _operandSizePrefixTable = new int[256];
+        private static readonly int[] _operandSizeTable = new int[256];
+
+
+        static OpCodeConverter()
+        {
+            //初始化所有 InteropService Method
+            _interopServiceMap = InteropService.SupportedMethods().ToDictionary(p => p.Hash, p => p.Method);
+            //初始化所有 OpCode OperandSize
+            foreach (FieldInfo field in typeof(OpCode).GetFields(BindingFlags.Public | BindingFlags.Static))
+            {
+                var attribute = field.GetCustomAttribute<OperandSizeAttribute>();
+                if (attribute == null) continue;
+                int index = (int)(OpCode)field.GetValue(null);
+                _operandSizePrefixTable[index] = attribute.SizePrefix;
+                _operandSizeTable[index] = attribute.Size;
+            }
+        }
         public static string ToAsciiString(byte[] byteArray)
         {
             var output = Encoding.UTF8.GetString(byteArray);
             if (output.Any(p => p < '0' || p > 'z')) return byteArray.ToHexString();
             return output;
         }
-        public static List<string> Analysis(List<byte> scripts, bool raw)
+        public static List<InstructionInfo> Parse(byte[] scripts)
         {
-            //初始化所有 OpCode
-            var OperandSizePrefixTable = new int[256];
-            var OperandSizeTable = new int[256];
-            foreach (FieldInfo field in typeof(OpCode).GetFields(BindingFlags.Public | BindingFlags.Static))
+            var result = new List<InstructionInfo>();
+            var position = 0;
+            while (position < scripts.Length)
             {
-                var attribute = field.GetCustomAttribute<OperandSizeAttribute>();
-                if (attribute == null) continue;
-                int index = (int)(OpCode)field.GetValue(null);
-                OperandSizePrefixTable[index] = attribute.SizePrefix;
-                OperandSizeTable[index] = attribute.Size;
-            }
-            //初始化所有 InteropService
-            var dic = new Dictionary<uint, string>();
-            InteropService.SupportedMethods().ToList().ForEach(p => dic.Add(p.Hash, p.Method));
-
-            //解析 Scripts
-            var result = new List<string>();
-            while (scripts.Count > 0)
-            {
-                var op = (OpCode)scripts[0];
-                var operandSizePrefix = OperandSizePrefixTable[scripts[0]];
-                var operandSize = OperandSizeTable[scripts[0]];
-                scripts.RemoveAt(0);
-
+                var instruction = new InstructionInfo() { Position = position };
+                var op = scripts[position++];
+                instruction.OpCode = (OpCode)op;
+                var operandSizePrefix = _operandSizePrefixTable[op];
+                var operandSize = 0;
+                switch (operandSizePrefix)
+                {
+                    case 0:
+                        operandSize = _operandSizeTable[op];
+                        break;
+                    case 1:
+                        operandSize = scripts[position];
+                        break;
+                    case 2:
+                        operandSize = BitConverter.ToUInt16(scripts, position);
+                        break;
+                    case 4:
+                        operandSize = BitConverter.ToInt32(scripts, position);
+                        break;
+                }
                 if (operandSize > 0)
                 {
-                    var operand = scripts.Take(operandSize).ToArray();
-                    if (op.ToString().StartsWith("PUSHINT"))
+                    position += operandSizePrefix;
+                    if (position + operandSize > scripts.Length)
                     {
-                        result.Add(raw ? $"{op.ToString()} {operand.ToHexString()}" : $"{op.ToString()} {new BigInteger(operand)}");
+                        //warning
+                        instruction.OpData= new ReadOnlyMemory<byte>(scripts, position,scripts.Length-position).ToArray();
+                        result.Add(instruction);
+                        return result;
+                        //throw new InvalidOperationException();
                     }
-                    else if (op == OpCode.SYSCALL)
+                    instruction.OpData = new ReadOnlyMemory<byte>(scripts, position, operandSize).ToArray();
+                    if (instruction.OpCode == OpCode.SYSCALL)
                     {
-                        result.Add(raw ? $"{op.ToString()} {operand.ToHexString()}" : $"{op.ToString()} {dic[BitConverter.ToUInt32(operand)]}");
+                        instruction.SystemCallMethod = _interopServiceMap[BitConverter.ToUInt32(instruction.OpData)];
                     }
-                    else
-                    {
-                        result.Add($"{op.ToString()} {operand.ToHexString()}");
-                    }
-                    scripts.RemoveRange(0, operandSize);
+         
                 }
-                if (operandSizePrefix > 0)
-                {
-                    var number = (int)new BigInteger(scripts.Take(operandSizePrefix).ToArray());
-                    scripts.RemoveRange(0, operandSizePrefix);
-                    var operand = scripts.Take(number).ToArray();
-
-                    result.Add(raw ? $"{op.ToString()} LENGTH:{number} {operand.ToHexString()}" : $"{op.ToString()} {(number == 20 ? new UInt160(operand).ToString() : ToAsciiString(operand))}");
-                    scripts.RemoveRange(0, number);
-                }
+                result.Add(instruction);
+                position += operandSize;
             }
             return result;
         }
+
     }
 }

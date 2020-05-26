@@ -153,6 +153,12 @@ small,.small{
     margin-right: auto;
     margin-left: auto;
 }
+.w500{
+    max-width: 500px;
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+}
 .w600{
     max-width: 650px;
     width: 100%;

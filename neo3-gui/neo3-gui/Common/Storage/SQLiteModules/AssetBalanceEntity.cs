@@ -13,7 +13,7 @@ namespace Neo.Common.Storage.SQLiteModules
         public AddressEntity Address { get; set; }
 
         public long AssetId { get; set; }
-        public AssetEntity Asset { get; set; }
+        public ContractEntity Asset { get; set; }
 
         public byte[] Balance { get; set; }
 

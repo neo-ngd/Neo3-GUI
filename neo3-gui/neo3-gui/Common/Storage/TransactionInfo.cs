@@ -12,5 +12,7 @@ namespace Neo.Common.Storage
         public UInt160 Sender { get; set; }
         public uint BlockHeight { get; set; }
         public DateTime Time { get; set; }
+
+        public List<TransferInfo> Transfers { get; set; }
     }
 }

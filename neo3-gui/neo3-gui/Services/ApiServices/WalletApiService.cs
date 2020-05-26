@@ -6,9 +6,11 @@ using System.Numerics;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Akka.Actor;
+using Akka.Util.Internal;
 using Neo.Common;
 using Neo.Common.Storage;
 using Neo.Common.Utility;
+using Neo.IO;
 using Neo.IO.Json;
 using Neo.Ledger;
 using Neo.Models;
@@ -19,6 +21,7 @@ using Neo.Network.P2P.Payloads;
 using Neo.Persistence;
 using Neo.SmartContract;
 using Neo.SmartContract.Native;
+using Neo.VM;
 using Neo.Wallets;
 using Neo.Wallets.NEP6;
 using Neo.Wallets.SQLite;
@@ -398,7 +401,7 @@ namespace Neo.Services.ApiServices
             }
             BigInteger gas = BigInteger.Zero;
             using (SnapshotView snapshot = Blockchain.Singleton.GetSnapshot())
-                foreach (UInt160 account in CurrentWallet.GetAccounts().Select(p => p.ScriptHash))
+                foreach (UInt160 account in CurrentWallet.GetAccounts().Where(a=>!a.WatchOnly).Select(p => p.ScriptHash))
                 {
                     gas += NativeContract.NEO.UnclaimedGas(snapshot, account, snapshot.Height + 1);
                 }
@@ -539,6 +542,130 @@ namespace Neo.Services.ApiServices
                 }
                 return Error(ErrorCode.TransferError, ex.Message);
             }
+        }
+
+
+
+        /// <summary>
+        /// send asset
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="receiver"></param>
+        /// <param name="amount"></param>
+        /// <param name="asset"></param>
+        /// <returns></returns>
+        public async Task<object> SendTo(TransferRequest[] transfers)
+        {
+            if (CurrentWallet == null)
+            {
+                return Error(ErrorCode.WalletNotOpen);
+            }
+            if (transfers.IsEmpty())
+            {
+                return Error(ErrorCode.ParameterIsNull);
+            }
+
+            var transferList = new List<TransferRequestModel>();
+            foreach (var transferRequest in transfers)
+            {
+                var (transfer, error) = ParseTransferRequest(transferRequest);
+                if (error.NotNull())
+                {
+                    return Error(ErrorCode.InvalidPara, error);
+                }
+                transferList.Add(transfer);
+            }
+
+            try
+            {
+                var tx = MakeTransaction(transferList);
+                if (tx == null)
+                {
+                    return Error(ErrorCode.BalanceNotEnough, "Insufficient funds");
+                }
+                var (signSuccess, context) = CurrentWallet.TrySignTx(tx);
+                if (!signSuccess)
+                {
+                    return Error(ErrorCode.SignFail, context.SafeSerialize());
+                }
+                await tx.Broadcast();
+                return new TransactionModel(tx);
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("Insufficient GAS"))
+                {
+                    return Error(ErrorCode.GasNotEnough);
+                }
+                return Error(ErrorCode.TransferError, ex.Message);
+            }
+        }
+
+        private (TransferRequestModel, string) ParseTransferRequest(TransferRequest request)
+        {
+            var model = new TransferRequestModel()
+            {
+                Receiver = request.Receiver,
+                Sender = request.Sender,
+            };
+            model.Asset = ConvertToAssetId(request.Asset, out var convertError);
+            if (model.Asset == null)
+            {
+                return (null, $"asset is not valid:{convertError}");
+            }
+            var assetInfo = AssetCache.GetAssetInfo(model.Asset);
+            if (assetInfo == null)
+            {
+                return (null, $"asset is not valid:{convertError}");
+            }
+            if (!BigDecimal.TryParse(request.Amount, assetInfo.Decimals, out BigDecimal sendAmount) || sendAmount.Sign <= 0)
+            {
+                return (null, "Incorrect Amount Format");
+            }
+            model.Amount = sendAmount;
+            return (model, null);
+        }
+
+        private Transaction MakeTransaction(List<TransferRequestModel> transfers)
+        {
+            var lookup = transfers.ToLookup(t => new
+            {
+                t.Sender,
+                t.Asset
+            });
+            using var sb = new ScriptBuilder();
+            using var snapshot = Blockchain.Singleton.GetSnapshot();
+
+            foreach (var transferRequests in lookup)
+            {
+                var sender = transferRequests.Key.Sender;
+                var assetHash = transferRequests.Key.Asset;
+                BigInteger amount = 0;
+                transferRequests.ForEach(t => amount += t.Amount.Value);
+                Console.WriteLine($"Transfer[{transferRequests.Key.Asset}]:{transferRequests.Key.Sender}=>{amount}");
+                var balance = sender.GetBalanceOf(assetHash, snapshot).Value;
+                if (balance < amount)
+                {
+                    //balance not enough
+                    return null;
+                }
+                foreach (var transfer in transferRequests)
+                {
+                    sb.EmitAppCall(assetHash, "transfer", sender, transfer.Receiver, transfer.Amount.Value);
+                    sb.Emit(OpCode.ASSERT);
+                }
+            }
+
+            var script = sb.ToArray();
+            var senders = transfers.Select(t => t.Sender).ToHashSet();
+            var cosigners = senders.Select(p =>
+                new Cosigner()
+                {
+                    // default access for transfers should be valid only for first invocation
+                    Scopes = WitnessScope.CalledByEntry,
+                    Account = p
+                }).ToArray();
+            return CurrentWallet.MakeTransaction(script, null, new TransactionAttribute[0], cosigners);
         }
 
 
@@ -689,7 +816,7 @@ namespace Neo.Services.ApiServices
                 return new PageList<TransactionPreviewModel>();
             }
             using var db = new TrackDB();
-            var trans = db.FindNep5Transactions(new TransferFilter() { FromOrTo = addresses, PageIndex = pageIndex, PageSize = limit });
+            var trans = db.QueryNep5Transactions(new TransferFilter() { FromOrTo = addresses, PageIndex = pageIndex, PageSize = limit });
             var result = new PageList<TransactionPreviewModel>
             {
                 TotalCount = trans.TotalCount,

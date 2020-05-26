@@ -4,7 +4,6 @@ import WalletStore from "./walletStore";
 import NodeStore from "./nodeStore";
 import PathStore from "./pathStore";
 
-
 let blockSyncStore = new BlockSyncStore();
 let walletStore = new WalletStore();
 let nodeStore=new NodeStore();

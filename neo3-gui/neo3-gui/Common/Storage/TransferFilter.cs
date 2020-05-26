@@ -30,6 +30,16 @@ namespace Neo.Common.Storage
         public uint? BlockHeight { get; set; }
         public List<UInt256> TxIds { get; set; }
 
+        public List<UInt160> From { get; set; }
+        public List<UInt160> To { get; set; }
+
+        public List<UInt160> FromOrTo { get; set; }
+
+        /// <summary>
+        /// Relate contracts hash
+        /// </summary>
+        public List<UInt160> Contracts { get; set; }
+
         /// <summary>
         /// start from 1,paged result only if this is not null
         /// </summary>

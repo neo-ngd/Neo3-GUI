@@ -23,8 +23,7 @@ class Walletlist extends React.Component {
     this.state = {
       size: 'default',
       assetlist: [],
-      iconLoading: false,
-      gas: 0
+      iconLoading: false
     };
   }
   componentDidMount() {
@@ -91,9 +90,9 @@ class Walletlist extends React.Component {
         console.log(_data);
         return;
       }
-      _this.setState({
-        gas: _data.result.unclaimedGas
-      })
+
+      _this.props.walletStore.setUnclaimedGas(_data.result.unclaimedGas);
+
     })
     .catch(function (error) {
       console.log(error);
@@ -189,6 +188,8 @@ class Walletlist extends React.Component {
   };
   render() {
     const accounts = this.props.walletStore.accountlist;
+    const unclaimedGas = this.props.walletStore.unclaimedGas;
+
     const { assetlist } = this.state;
     const { t } = this.props;
     return (
@@ -250,7 +251,7 @@ class Walletlist extends React.Component {
                 )}
               />
               <div className="w200 mt4">
-                <Button className="w200" onClick={this.claimGas} loading={this.state.iconLoading}>{t("button.claim")} {this.state.gas} GAS</Button>
+                <Button className="w200" onClick={this.claimGas} loading={this.state.iconLoading}>{t("button.claim")} {unclaimedGas} GAS</Button>
               </div>
             </Col>
           </Row>

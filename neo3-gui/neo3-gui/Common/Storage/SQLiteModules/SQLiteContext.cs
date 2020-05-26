@@ -1,7 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Neo.Common.Storage.SQLiteModules
 {
@@ -13,19 +15,32 @@ namespace Neo.Common.Storage.SQLiteModules
         private readonly string _filename;
 
         /// <summary>
-        /// db file unique identification 
+        /// db file unique identification
         /// </summary>
         public byte[] Identity => _dbId;
 
 
         public DbSet<IdentityEntity> Identities { get; set; }
         public DbSet<SyncIndex> SyncIndexes { get; set; }
-        public DbSet<Nep5TransactionEntity> Nep5Transactions { get; set; }
-        public DbSet<AssetEntity> Assets { get; set; }
+        public DbSet<Nep5TransferEntity> Nep5Transactions { get; set; }
         public DbSet<AssetBalanceEntity> AssetBalances { get; set; }
         public DbSet<AddressEntity> Addresses { get; set; }
         public DbSet<TransactionEntity> Transactions { get; set; }
+        public DbSet<InvokeRecordEntity> InvokeRecords { get; set; }
 
+        public DbSet<ContractEntity> Contracts { get; set; }
+
+        static SQLiteContext()
+        {
+            if (!Directory.Exists("Data_Track"))
+            {
+                Directory.CreateDirectory("Data_Track");
+            }
+        }
+
+        public SQLiteContext() : this(Path.Combine($"Data_Track", $"track.{ProtocolSettings.Default.Magic}.db"))
+        {
+        }
 
         public SQLiteContext(string filename)
         {
@@ -62,7 +77,7 @@ namespace Neo.Common.Storage.SQLiteModules
         {
             try
             {
-                return SyncIndexes.OrderBy(s => s.BlockHeight).LastOrDefault()?.BlockHeight;
+                return SyncIndexes.OrderByDescending(s=>s.BlockHeight).FirstOrDefault()?.BlockHeight;
             }
             catch (Exception e)
             {
@@ -78,6 +93,7 @@ namespace Neo.Common.Storage.SQLiteModules
                 DataSource = _filename
             };
             optionsBuilder.UseSqlite(sb.ToString());
+            //optionsBuilder.UseLoggerFactory(LoggerFactory.Create(b => b.AddConsole()));
         }
 
 
@@ -86,18 +102,22 @@ namespace Neo.Common.Storage.SQLiteModules
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<Nep5TransactionEntity>().HasIndex(p => p.FromId);
-            modelBuilder.Entity<Nep5TransactionEntity>().HasIndex(p => p.ToId);
-            modelBuilder.Entity<Nep5TransactionEntity>().HasIndex(p => p.Time);
-            modelBuilder.Entity<Nep5TransactionEntity>().HasIndex(p => p.TxId);
+            modelBuilder.Entity<Nep5TransferEntity>().HasIndex(p => p.FromId);
+            modelBuilder.Entity<Nep5TransferEntity>().HasIndex(p => p.ToId);
+            modelBuilder.Entity<Nep5TransferEntity>().HasIndex(p => p.Time);
+            modelBuilder.Entity<Nep5TransferEntity>().HasIndex(p => p.TxId);
 
-            modelBuilder.Entity<AddressEntity>().HasIndex(p => p.Address);
+            modelBuilder.Entity<AddressEntity>().HasIndex(p => p.Hash);
 
             modelBuilder.Entity<AssetBalanceEntity>().HasIndex(p => new { p.AddressId, p.AssetId });
 
+            modelBuilder.Entity<SyncIndex>().HasIndex(p => p.BlockHeight);
 
-            //modelBuilder.Entity<SyncIndex>().HasIndex(p => p.BlockHeight);
             modelBuilder.Entity<TransactionEntity>().HasIndex(p => p.BlockHeight);
+
+            modelBuilder.Entity<InvokeRecordEntity>().HasIndex(p => p.TxId);
+            modelBuilder.Entity<InvokeRecordEntity>().HasIndex(p => p.ContractId);
+
         }
     }
 }

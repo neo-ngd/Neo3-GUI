@@ -13,9 +13,9 @@ namespace Neo.Common.Storage
     public class ExecuteResultInfo
     {
         /// <summary>
-        /// transaction hash bin-endian, starts with "0x"
+        /// transaction hash
         /// </summary>
-        public string TxId { get; set; }
+        public UInt256 TxId { get; set; }
 
         public TriggerType Trigger { get; set; }
         public VMState VMState { get; set; }

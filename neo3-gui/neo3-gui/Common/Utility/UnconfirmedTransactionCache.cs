@@ -70,6 +70,15 @@ namespace Neo.Common.Utility
             _unconfirmedTransactions.Remove(txId);
         }
 
+
+        public static TempTransaction GetUnconfirmedTransaction(UInt256 txId)
+        {
+            if (_unconfirmedTransactions.TryGetValue(txId, out var tx))
+            {
+                return tx;
+            }
+            return null;
+        }
         public static PageList<TempTransaction> GetUnconfirmedTransactions(IEnumerable<UInt160> addresses = null, int pageIndex = 1, int pageSize = 10)
         {
             IEnumerable<TempTransaction> query = _unconfirmedTransactions.Values;

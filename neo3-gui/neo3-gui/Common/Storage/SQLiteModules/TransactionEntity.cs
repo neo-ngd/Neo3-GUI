@@ -22,6 +22,7 @@ namespace Neo.Common.Storage.SQLiteModules
         public AddressEntity Sender { get; set; }
 
         public DateTime Time { get; set; }
-
+        public IList<Nep5TransferEntity> Transfers { get; set; }
+        public IList<InvokeRecordEntity> InvokeContracts { get; set; }
     }
 }

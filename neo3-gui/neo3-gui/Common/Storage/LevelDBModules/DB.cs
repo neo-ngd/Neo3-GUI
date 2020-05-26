@@ -36,6 +36,12 @@ namespace Neo.Common.Storage.LevelDBModules
             NativeHelper.CheckError(error);
         }
 
+
+        public byte[] Get(byte[] key)
+        {
+            return Get(ReadOptions.Default, key);
+        }
+
         public byte[] Get(ReadOptions options, byte[] key)
         {
             IntPtr value = Native.leveldb_get(handle, options.handle, key, (UIntPtr)key.Length, out UIntPtr length, out IntPtr error);

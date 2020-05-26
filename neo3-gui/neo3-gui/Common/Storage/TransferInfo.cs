@@ -15,6 +15,6 @@ namespace Neo.Common.Storage
         public ulong TimeStamp { get; set; }
 
         public UInt160 Asset { get; set; }
-        public AssetInfo AssetInfo { get; set; }
+        //public AssetInfo AssetInfo { get; set; }
     }
 }

@@ -6,6 +6,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
+using Neo.Common.Utility;
 using Neo.Cryptography.ECC;
 using Neo.IO;
 using Neo.IO.Json;
@@ -203,6 +204,12 @@ namespace Neo.Services.ApiServices
             return result;
         }
 
+
+
+        public async Task<object> ParseScript(byte[] script)
+        {
+            return OpCodeConverter.Parse(script);
+        }
 
         #region Vote
 

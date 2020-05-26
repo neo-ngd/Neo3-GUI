@@ -5,11 +5,14 @@ using System.Threading.Tasks;
 using Akka.IO;
 using Neo.Common;
 using Neo.Common.Storage;
+using Neo.Common.Utility;
 using Neo.Ledger;
 using Neo.Models;
 using Neo.Models.Blocks;
 using Neo.Models.Wallets;
 using Neo.Network.P2P.Payloads;
+using Neo.SmartContract;
+using Neo.VM;
 
 namespace Neo.Services.ApiServices
 {
@@ -77,14 +80,47 @@ namespace Neo.Services.ApiServices
         public async Task<object> GetAllAssets()
         {
             using var db = new TrackDB();
-            return db.GetAllAssets()?.Select(a => new AssetInfo()
+            var result = db.GetAllContracts()?.Where(a => a.Symbol.NotNull() && a.DeleteOrMigrateTxId == null).Select(a =>
+                 new AssetInfoModel()
+                 {
+                     Asset = a.Hash,
+                     Decimals = a.Decimals,
+                     Name = a.Name,
+                     Symbol = a.Symbol,
+                     CreateTime = a.CreateTime,
+                 }).ToList();
+
+
+            var totalSupplies = AssetCache.GetTotalSupply(result.Select(r => r.Asset));
+            for (var i = 0; i < result.Count; i++)
             {
-                Asset = UInt160.Parse(a.Asset),
-                Decimals = a.Decimals,
-                Name = a.Name,
-                Symbol = a.Symbol,
-                TotalSupply = new BigInteger(a.TotalSupply),
-            });
+                result[i].TotalSupply = totalSupplies[i];
+            }
+            return result;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public async Task<object> GetAsset(UInt160 asset)
+        {
+            var assetInfo = AssetCache.GetAssetInfo(asset);
+            if (assetInfo == null)
+            {
+                return null;
+            }
+            var totalSupply = AssetCache.GetTotalSupply(asset);
+            return new AssetInfoModel()
+            {
+                Asset = assetInfo.Asset,
+                Decimals = assetInfo.Decimals,
+                Name = assetInfo.Name,
+                Symbol = assetInfo.Symbol,
+                TotalSupply = totalSupply,
+                //CreateTime = a.CreateTime,
+            };
         }
 
 
@@ -96,13 +132,13 @@ namespace Neo.Services.ApiServices
                 Addresses = addresses,
                 Assets = assets,
             });
-            return balances.ToLookup(b=>b.Address).ToAddressBalanceModels();
+            return balances.ToLookup(b => b.Address).ToAddressBalanceModels();
         }
 
 
         public async Task<object> GetSync()
         {
-            using var db=new TrackDB();
+            using var db = new TrackDB();
             return db.GetMaxSyncIndex();
         }
 

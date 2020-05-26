@@ -25,21 +25,19 @@ namespace neo3_gui.tests.Storage
             {
                 BlockHeight = 0,
                 From = UInt160.Parse("0xf9df308b7bb380469354062f6b73f9cb0124317b"),
-                FromBalance = 0,
                 To = UInt160.Parse("0x18c52425debcc3c76c06c3368044b8c60609a904"),
                     
-                ToBalance =1,
                 Asset = NativeContract.NEO.Hash,
                 Amount = 1,
                 TxId = UInt256.Parse(""),
                 TimeStamp = DateTime.Now.ToTimestamp(),
-                AssetInfo = new AssetInfo()
-                {
-                    Asset = NativeContract.NEO.Hash,
-                    Name = "NEO",
-                    Symbol = "neo",
-                    Decimals = NativeContract.NEO.Decimals,
-                },
+                //AssetInfo = new AssetInfo()
+                //{
+                //    Asset = NativeContract.NEO.Hash,
+                //    Name = "NEO",
+                //    Symbol = "neo",
+                //    Decimals = NativeContract.NEO.Decimals,
+                //},
             };
 
             _db.AddTransfer(transfer);
