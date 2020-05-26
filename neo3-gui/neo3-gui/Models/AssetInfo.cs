@@ -15,5 +15,6 @@ namespace Neo.Models
         public string Symbol { get; set; }
 
         public byte Decimals { get; set; }
+        public BigInteger TotalSupply { get; set; }
     }
 }

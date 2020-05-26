@@ -5,7 +5,6 @@ import { observable, action } from "mobx";
 class WalletStore {
     @observable isOpen = false;
     @observable accountlist = [];
-    @observable unclaimedGas = "";
 
     @action logout() {
         this.isOpen = false;
@@ -17,16 +16,12 @@ class WalletStore {
         this.isOpen = isopen;
     }
 
-    @action setAccounts(accounts) {
-        this.accountlist = accounts;
+    @action setAccounts(data) {
+        this.accountlist = data;
     }
 
     @action addAccount(account) {
         this.accountlist = this.accountlist.concat(account);
-    }
-
-    @action setUnclaimedGas(gas) {
-        this.unclaimedGas = gas;
     }
 
 }

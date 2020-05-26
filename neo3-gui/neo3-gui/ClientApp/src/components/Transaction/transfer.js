@@ -19,7 +19,6 @@ import '../../static/css/wallet.css'
 import { Form, DatePicker, TimePicker } from 'antd';
 import Sync from '../sync';
 import { withTranslation } from "react-i18next";
-import { post } from "../../core/request";
 
 const { Option } = Select;
 const { Content } = Layout;
@@ -41,7 +40,12 @@ class Transfer extends React.Component {
   }
   componentDidMount() {
     var _this = this;
-    post("GetMyBalances",{}).then(res =>{
+    axios.post('http://localhost:8081', {
+      "id": "1234",
+      "method": "GetMyBalances",
+      "params": {}
+    })
+    .then(function (response) {
       var _data = response.data;
       if (_data.msgType === -1) {
         message.error(t("wallet.open wallet first"));
@@ -51,6 +55,10 @@ class Transfer extends React.Component {
         addresslist: _data.result
       })
     })
+    .catch(function (error) {
+      console.log(error);
+      console.log("error2");
+    });
   }
   setAddress = target => {
     target = target ? target : 0;

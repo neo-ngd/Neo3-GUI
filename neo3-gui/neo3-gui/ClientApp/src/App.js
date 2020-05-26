@@ -18,6 +18,7 @@ class App extends React.Component {
     this.initWebSocket();
   }
 
+
   initWebSocket = () => {
     console.log("connecting");
     this.ws = new WebSocket('ws://127.0.0.1:8081');
@@ -37,6 +38,7 @@ class App extends React.Component {
 
     this.ws.onmessage = this.processMessage;
   };
+
 
   reconnectWebSocket = () => {
     let self = this;
@@ -58,8 +60,7 @@ class App extends React.Component {
         stores.blockSyncStore.setHeight(msg.result);
         break;
       case "getWalletBalance":
-        stores.walletStore.setAccounts(msg.result.accounts);
-        stores.walletStore.setUnclaimedGas(msg.result.unclaimedGas);
+        stores.walletStore.setAccounts(msg.result);
         break;
       default:
         break;

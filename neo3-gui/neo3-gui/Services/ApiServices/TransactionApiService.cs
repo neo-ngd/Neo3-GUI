@@ -42,7 +42,7 @@ namespace Neo.Services.ApiServices
                 model.Confirmations = Blockchain.Singleton.Height - header.Index + 1;
             }
             using var db = new TrackDB();
-            var trans = db.QueryTransfers(new TransferFilter() { TxIds = new List<UInt256>() { txId }, PageSize = int.MaxValue }).List;
+            var trans = db.FindTransfer(new TransferFilter() { TxIds = new List<UInt256>() { txId }, PageSize = int.MaxValue }).List;
             model.Transfers = trans.Select(tx => tx.ToTransferModel()).ToList();
 
             var executeResult = db.GetExecuteLog(txId);
@@ -57,31 +57,6 @@ namespace Neo.Services.ApiServices
             }
             return model;
         }
-
-
-        public async Task<object> GetUnconfirmedTransaction(UInt256 txId)
-        {
-            var transaction = Blockchain.Singleton.GetTransaction(txId);
-            if (transaction == null)
-            {
-                return Error(ErrorCode.TxIdNotFound);
-            }
-
-            var model = new TransactionModel(transaction);
-            var tempTx = UnconfirmedTransactionCache.GetUnconfirmedTransaction(txId);
-            if (tempTx?.Transfers.NotEmpty() == true)
-            {
-                model.Transfers = tempTx.Transfers.Select(n => new TransferModel()
-                {
-                    From = n.From,
-                    To = n.To,
-                    Amount = new BigDecimal(n.Amount, n.Decimals).ToString(),
-                    Symbol = n.Symbol,
-                }).ToList();
-            }
-            return model;
-        }
-
 
         /// <summary>
         /// get all unconfirmed transactions
@@ -107,33 +82,26 @@ namespace Neo.Services.ApiServices
         /// query all transactions(on chain)
         /// </summary>
         /// <returns></returns>
-        public async Task<object> QueryTransactions(int pageIndex = 1, int limit = 100, uint? blockHeight = null, UInt160 address = null, UInt160 contract = null)
+        public async Task<object> QueryTransactions(int pageIndex = 1, int limit = 100, uint? blockHeight = null)
         {
             using var db = new TrackDB();
-            var filter = new TransactionFilter()
+            var trans = db.FindTransactions(new TransactionFilter() { BlockHeight = blockHeight, PageIndex = pageIndex, PageSize = limit });
+            var transfers = new List<TransferInfo>();
+            if (trans.List.NotEmpty())
             {
-                BlockHeight = blockHeight,
-                PageIndex = pageIndex,
-                PageSize = limit
-            };
-            if (address != null)
-            {
-                filter.FromOrTo = new List<UInt160>() { address };
+                transfers = db.FindTransfer(new TransferFilter() { TxIds = trans.List.Select(tx => tx.TxId).ToList(), PageSize = int.MaxValue }).List;
+
             }
-            if (contract != null)
-            {
-                filter.Contracts = new List<UInt160>() { contract };
-            }
-            var trans = db.QueryTransactions(filter, true);
             var result = new PageList<TransactionPreviewModel>
             {
                 TotalCount = trans.TotalCount,
                 PageSize = trans.PageSize,
                 PageIndex = pageIndex,
-                List = ConvertToTransactionPreviewModel(trans.List),
+                List = ConvertToTransactionPreviewModel(trans.List, transfers),
             };
             return result;
         }
+
 
 
 
@@ -143,28 +111,15 @@ namespace Neo.Services.ApiServices
         /// <returns></returns>
         public async Task<object> QueryNep5Transactions(int pageIndex = 1, int limit = 100, UInt160 address = null, UInt160 asset = null, uint? blockHeight = null)
         {
+            var addresses = address != null ? new List<UInt160>() { address } : new List<UInt160>();
             using var db = new TrackDB();
-            var filter = new TransactionFilter()
-            {
-                BlockHeight = blockHeight,
-                PageIndex = pageIndex,
-                PageSize = limit
-            };
-            if (address != null)
-            {
-                filter.FromOrTo = new List<UInt160>() { address };
-            }
-            if (asset != null)
-            {
-                filter.Contracts = new List<UInt160>() { asset };
-            }
-            var trans = db.QueryTransactions(filter, true);
+            var trans = db.FindNep5Transactions(new TransferFilter() { FromOrTo = addresses, Asset = asset, BlockHeight = blockHeight, PageIndex = pageIndex, PageSize = limit });
             var result = new PageList<TransactionPreviewModel>
             {
                 TotalCount = trans.TotalCount,
                 PageSize = trans.PageSize,
                 PageIndex = pageIndex,
-                List = ConvertToTransactionPreviewModel(trans.List),
+                List = trans.List?.ToTransactionPreviewModel(),
             };
             return result;
         }
@@ -176,7 +131,7 @@ namespace Neo.Services.ApiServices
         public async Task<PageList<TransferInfo>> QueryTransfers(TransferFilter filter)
         {
             using var db = new TrackDB();
-            var result = db.QueryTransfers(filter) as PageList<TransferInfo>;
+            var result = db.FindTransfer(filter) as PageList<TransferInfo>;
             return result;
         }
 
@@ -207,14 +162,14 @@ namespace Neo.Services.ApiServices
 
 
 
-        private List<TransactionPreviewModel> ConvertToTransactionPreviewModel(List<TransactionInfo> transactions)
+        private List<TransactionPreviewModel> ConvertToTransactionPreviewModel(List<TransactionInfo> transactions, List<TransferInfo> transfers)
         {
             var model = transactions.Select(tx => new TransactionPreviewModel()
             {
                 TxId = tx.TxId,
                 Timestamp = tx.Time.ToTimestampMS(),
                 BlockHeight = tx.BlockHeight,
-                Transfers = tx.Transfers?.Where(t => t.TxId == tx.TxId).Select(t => t.ToTransferModel()).ToList(),
+                Transfers = transfers?.Where(t => t.TxId == tx.TxId).Select(t => t.ToTransferModel()).ToList(),
             }).ToList();
 
             return model;

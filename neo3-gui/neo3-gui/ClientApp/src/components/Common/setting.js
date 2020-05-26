@@ -11,6 +11,7 @@ import { shell, remote } from "electron";
 import neonode from "../../neonode";
 
 
+
 @withTranslation()
 @inject("walletStore")
 @inject("blockSyncStore")
@@ -28,7 +29,7 @@ class Setting extends React.Component {
     };
   }
   switchLang = (lng) => {
-    const { i18n } = this.props;
+    const { t, i18n } = this.props;
     if (Config.Language === lng) {
       return;
     }

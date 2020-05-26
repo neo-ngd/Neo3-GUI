@@ -19,7 +19,6 @@ import Walletdetail from '../components/Wallet/walletdetail';
 import Wallettrans from '../components/Wallet/trans';
 
 import Transfer from '../components/Transaction/transfer';
-import Selecttrans from '../components/Transaction/selecttrans';
 import Transdetail from '../components/Transaction/transdetail';
 
 import Contract from '../components/Contract/contract';
@@ -62,8 +61,7 @@ const BasicRoute = () => (
                     <Route exact path="/wallet/address:address" component={Walletdetail} />
                     <Route exact path="/wallet/transaction" component={Wallettrans} />
                     <Route exact path="/wallet/transaction:hash" component={Transdetail} />
-                    {/* <Route exact path="/wallet/transfer" component={Transfer} /> */}
-                    <Route exact path="/wallet/transfer" component={Selecttrans} />
+                    <Route exact path="/wallet/transfer" component={Transfer} />
                 </Layout>
             </Route>
             <Route path="/contract">

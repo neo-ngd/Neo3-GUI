@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -32,7 +31,6 @@ using Neo.Persistence;
 using Neo.Services;
 using Neo.SmartContract;
 using Neo.SmartContract.Native;
-using Neo.SmartContract.Native.Tokens;
 using Neo.VM;
 using Neo.VM.Types;
 using Neo.Wallets;
@@ -244,25 +242,6 @@ namespace Neo
             return JsonSerializer.Deserialize(json, targetType, SerializeOptions);
         }
 
-
-
-        /// <summary>
-        /// deserialize from json string
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="jsonBytes"></param>
-        /// <returns></returns>
-        public static T DeserializeJson<T>(this byte[] jsonBytes)
-        {
-            if (jsonBytes.IsEmpty())
-            {
-                return default(T);
-            }
-
-            return JsonSerializer.Deserialize<T>(jsonBytes, SerializeOptions);
-        }
-
-
         /// <summary>
         /// 
         /// </summary>
@@ -317,20 +296,6 @@ namespace Neo
             return null;
         }
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bytes"></param>
-        /// <returns></returns>
-        public static UInt160 ToUInt160(this byte[] bytes)
-        {
-            if (bytes?.Length == 20)
-            {
-                return new UInt160(bytes);
-            }
-            return null;
-        }
 
         /// <summary>
         /// 
@@ -437,24 +402,6 @@ namespace Neo
         }
 
         /// <summary>
-        /// query neo/gas balance quickly
-        /// </summary>
-        /// <param name="addresses"></param>
-        /// <param name="asset"></param>
-        /// <param name="snapshot"></param>
-        /// <returns></returns>
-        public static List<BigDecimal> GetNativeBalanceOf<T>(this IEnumerable<UInt160> addresses, Nep5Token<T> asset, StoreView snapshot) where T : Nep5AccountState, new()
-        {
-            var balances = new List<BigDecimal>();
-            foreach (var account in addresses)
-            {
-                var balance = asset.BalanceOf(snapshot, account);
-                balances.Add(new BigDecimal(balance, asset.Decimals));
-            }
-            return balances;
-        }
-
-        /// <summary>
         /// query balance
         /// </summary>
         /// <param name="addresses"></param>
@@ -483,14 +430,6 @@ namespace Neo
                 throw new ArgumentException($"invalid assetId:[{assetId}]");
             }
 
-            if (assetInfo.Asset == NativeContract.NEO.Hash)
-            {
-                return GetNativeBalanceOf(addresses, NativeContract.NEO, snapshot);
-            }
-            if (assetInfo.Asset == NativeContract.GAS.Hash)
-            {
-                return GetNativeBalanceOf(addresses, NativeContract.GAS, snapshot);
-            }
             using var sb = new ScriptBuilder();
             foreach (var address in addresses)
             {
@@ -637,7 +576,7 @@ namespace Neo
         }
 
 
-        private static readonly ConcurrentDictionary<ErrorCode, string> _errorMap = new ConcurrentDictionary<ErrorCode, string>();
+        private static readonly Dictionary<ErrorCode, string> _errorMap = new Dictionary<ErrorCode, string>();
 
         public static WsError ToError(this ErrorCode code)
         {
@@ -878,51 +817,6 @@ namespace Neo
                 ParameterList = new[] { ContractParameterType.Signature }
             };
             return contract;
-        }
-
-
-        public static bool ToBigInteger(this JStackItem item, out BigInteger amount)
-        {
-            amount = 0;
-            if (item.TypeCode == ContractParameterType.Integer)
-            {
-                amount = (BigInteger)item.Value;
-                return true;
-            }
-            if (item.TypeCode == ContractParameterType.ByteArray)
-            {
-                amount = new BigInteger((byte[])item.Value);
-                return true;
-            }
-            return false;
-        }
-
-
-        public static byte[] Append(this byte[] source, params byte[][] bytes)
-        {
-            IEnumerable<byte> data = source;
-            foreach (var b in bytes)
-            {
-                data = data.Concat(b);
-            }
-            return data.ToArray();
-        }
-
-
-
-        public static NotificationInfo ToNotificationInfo(this NotifyEventArgs notify)
-        {
-            var notification = new NotificationInfo();
-            notification.Contract = notify.ScriptHash.ToString();
-            try
-            {
-                notification.State = notify.State.ToParameter().ToJson();
-            }
-            catch (InvalidOperationException)
-            {
-                notification.State = "error: recursive reference";
-            }
-            return notification;
         }
 
     }
