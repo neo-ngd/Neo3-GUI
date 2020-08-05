@@ -80,7 +80,7 @@ class Untransdetail extends React.Component {
             <Col span={24} className="bg-white pv4">
               <a className="fix-btn" onClick={this.showDrawer}><SwapOutlined /></a>
               <Tabs className="tran-title" defaultActiveKey="1">
-                <TabPane tab={t("blockchain.transaction.content")} key="1">
+                <TabPane tab={t("blockchain.transaction.content")} key="1" tabBarExtraContent={<ArrowLeftOutlined className="h2" onClick={this.back}/>}>
                   <Hashdetail hashdetail={hashdetail} />
                   <Translist transfers={transfers} />
                   <Attrlist attributes={attributes} />
