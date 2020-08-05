@@ -69,6 +69,10 @@ class Untransdetail extends React.Component {
       _this.props.history.goBack();
     });
   }
+  back=()=>{
+    this.props.history.goBack();
+  }
+  
   render = () => {
     const { t } = this.props;
     const { hashdetail, transfers, witnesses, attributes } = this.state;
