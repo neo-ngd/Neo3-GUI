@@ -1,5 +1,6 @@
 import axios from "axios";
 import { message } from "antd";
+import { method } from "lodash";
 
 const request = async (method, params) => {
   // 默认Axios Post方法
@@ -28,5 +29,15 @@ const post = (method, params) => {
   return request(method, params);
 };
 
-export { post };
+const postAsync = async (method, params) => {
+  let response = await request(method, params);
+  if (response.status !== 200) {
+    let error = new Error("Response Error!");
+    error.response = response;
+    throw error;
+  }
+  return response.data;
+}
+
+export { post, postAsync };
 export default request;

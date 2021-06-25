@@ -149,7 +149,7 @@ namespace Neo.Services.ApiServices
 
 
 
-        public async Task<object> UpdateContract(UInt160 contractHash, string nefPath, string manifestPath = null, bool sendTx = false, UInt160 sender = null)
+        public async Task<object> UpdateContract(UInt160 contractHash, string nefPath, string manifestPath = null, bool sendTx = false, UInt160[] cosigners = null)
         {
             if (CurrentWallet == null)
             {
@@ -175,11 +175,15 @@ namespace Neo.Services.ApiServices
             sb.EmitDynamicCall(contractHash, "update", nefFile.ToArray(), manifest.ToJson().ToString(), null);
             var script = sb.ToArray();
 
-            var singers = new Signer[] { new Signer() { Account = sender, Scopes = WitnessScope.Global } };
+            var singers = new List<Signer> { };
+            if (cosigners != null)
+            {
+                singers.AddRange(cosigners.Select(s => new Signer() { Account = s, Scopes = WitnessScope.Global }));
+            }
             Transaction tx;
             try
             {
-                tx = CurrentWallet.MakeTransaction(Helpers.GetDefaultSnapshot(), script, sender, singers);
+                tx = CurrentWallet.MakeTransaction(Helpers.GetDefaultSnapshot(), script, null, singers.ToArray());
             }
             catch (InvalidOperationException ex)
             {

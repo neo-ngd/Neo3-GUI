@@ -24,6 +24,7 @@ import Untransdetail from '../components/Transaction/untransdetail';
 import Contract from '../components/Contract/contract';
 import Contractlayout from '../components/Contract/contractlayout';
 import Contractdeploy from '../components/Contract/deploy';
+import ContractUpgrade from '../components/Contract/upgrade';
 import Contractinvoke from '../components/Contract/invoke';
 import Contractdetail from '../components/Contract/contractdetail';
 
@@ -76,6 +77,7 @@ const BasicRoute = () => (
                     <Route exact path="/contract" component={Contract} />
                     <Route exact path="/contract/detail:hash" component={Contractdetail} />
                     <Route exact path="/contract/deploy" component={Authenticated(Contractdeploy)} />
+                    <Route exact path="/contract/upgrade" component={Authenticated(ContractUpgrade)} />
                     <Route exact path="/contract/invoke" component={Authenticated(Contractinvoke)} />
                 </Layout>
             </Route>

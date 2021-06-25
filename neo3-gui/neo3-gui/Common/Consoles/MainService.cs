@@ -524,9 +524,9 @@ namespace Neo.Common.Consoles
         private bool OnExportBlocksCommand(string[] args)
         {
             uint height = NativeContract.Ledger.CurrentIndex(NeoSystem.StoreView);
-            var start = args.Length >= 2 ? uint.Parse(args[1]) : 0;
-            var count = args.Length >= 3 ? uint.Parse(args[2]) : uint.MaxValue;
-            var path = args.Length >= 4 ? args[3] : "chain.acc";
+            var start = args.Length > 2 ? uint.Parse(args[2]) : 0;
+            var count = args.Length > 3 ? uint.Parse(args[3]) : uint.MaxValue;
+            var path = args.Length > 4 ? args[4] : "chain.acc";
 
             if (height < start)
             {
@@ -1097,11 +1097,6 @@ namespace Neo.Common.Consoles
             return true;
         }
 
-        public override async void OnStart(string[] args)
-        {
-            base.OnStart(args);
-            await Start(args);
-        }
 
         private bool OnStartCommand(string[] args)
         {

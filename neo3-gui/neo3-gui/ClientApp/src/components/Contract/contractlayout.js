@@ -1,9 +1,9 @@
 /* eslint-disable */
 import React from "react";
-import { Layout, Menu } from "antd";
+import { Layout, Menu,Input } from "antd";
 import { Link } from "react-router-dom";
 import MenuDown from "../Common/menudown";
-import { HomeOutlined, FileSyncOutlined } from "@ant-design/icons";
+import { HomeOutlined, FileSyncOutlined,ArrowRightOutlined, SearchOutlined } from "@ant-design/icons";
 import { withTranslation } from "react-i18next";
 
 const { Sider } = Layout;
@@ -49,6 +49,11 @@ class Contractlayout extends React.Component {
               <Menu.Item key="3">
                 <Link to="/contract/invoke">
                   {t("sideBar.invoke contract")}
+                </Link>
+              </Menu.Item>
+               <Menu.Item key="4">
+                <Link to="/contract/upgrade">
+                  {t("sideBar.upgrade contract")}
                 </Link>
               </Menu.Item>
             </SubMenu>
