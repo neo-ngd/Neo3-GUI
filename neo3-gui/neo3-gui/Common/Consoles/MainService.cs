@@ -134,6 +134,7 @@ namespace Neo.Common.Consoles
                 Tcp = new IPEndPoint(IPAddress.Any, CliSettings.Default.P2P.Port),
                 MinDesiredConnections = CliSettings.Default.P2P.MinDesiredConnections,
                 MaxConnections = CliSettings.Default.P2P.MaxConnections,
+                MaxKnownHashes = CliSettings.Default.P2P.MaxKnownHashes,
                 MaxConnectionsPerAddress = CliSettings.Default.P2P.MaxConnectionsPerAddress
             });
         }
