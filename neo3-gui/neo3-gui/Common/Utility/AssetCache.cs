@@ -6,6 +6,7 @@ using System.Numerics;
 using Neo.Common.Storage;
 using Neo.Common.Storage.LevelDBModules;
 using Neo.Common.Storage.SQLiteModules;
+using Neo.Extensions;
 using Neo.Ledger;
 using Neo.Models;
 using Neo.Persistence;

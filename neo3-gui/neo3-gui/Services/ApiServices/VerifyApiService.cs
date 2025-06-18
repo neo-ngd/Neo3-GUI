@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Neo.Common.Consoles;
+using Neo.Extensions;
 using Neo.Models;
 using Neo.Wallets;
 

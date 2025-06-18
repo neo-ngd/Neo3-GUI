@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Neo.Common.Consoles;
+using Neo.Extensions;
 using Neo.IO;
 using Neo.Models;
 using Neo.VM.Types;

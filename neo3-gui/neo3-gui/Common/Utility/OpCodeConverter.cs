@@ -6,6 +6,7 @@ using System.Numerics;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Neo.Extensions;
 using Neo.Models.Contracts;
 using Neo.SmartContract;
 using Neo.VM;

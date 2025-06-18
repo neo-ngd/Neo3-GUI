@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Neo.Cryptography.ECC;
+using Neo.Extensions;
 using Neo.Models;
 using Neo.SmartContract;
 using Neo.SmartContract.Native;

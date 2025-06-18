@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Neo.Common.Consoles;
 using Neo.Common.Storage.LevelDBModules;
 using Neo.Common.Storage.SQLiteModules;
+using Neo.Extensions;
 using Neo.Models;
 
 namespace Neo.Common.Storage

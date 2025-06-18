@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Neo;
+using Neo.Extensions;
 using Neo.SmartContract;
 using Neo.VM;
 using Neo.VM.Types;
