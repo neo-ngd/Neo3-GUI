@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Neo.Common.Storage;
 using Neo.Common.Utility;
 using Neo.Cryptography.ECC;
+using Neo.Extensions;
 using Neo.IO;
 using Neo.Models;
 using Neo.Models.Contracts;

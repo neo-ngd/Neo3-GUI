@@ -82,13 +82,15 @@ namespace Neo.Common.Consoles
         public int MinDesiredConnections { get; }
         public int MaxConnections { get; }
         public int MaxConnectionsPerAddress { get; }
+        public int MaxKnownHashes { get; }
 
         public P2PSettings(IConfigurationSection section)
         {
             this.Port = ushort.Parse(section.GetValue("Port", "10333"));
             this.WsPort = ushort.Parse(section.GetValue("WsPort", "10334"));
-            this.MinDesiredConnections = section.GetValue("MinDesiredConnections", Peer.DefaultMinDesiredConnections);
-            this.MaxConnections = section.GetValue("MaxConnections", Peer.DefaultMaxConnections);
+            this.MinDesiredConnections = section.GetValue("MinDesiredConnections", ChannelsConfig.DefaultMinDesiredConnections);
+            this.MaxConnections = section.GetValue("MaxConnections", ChannelsConfig.DefaultMaxConnections);
+            this.MaxKnownHashes = section.GetValue("MaxKnownHashes", ChannelsConfig.DefaultMaxKnownHashes);
             this.MaxConnectionsPerAddress = section.GetValue("MaxConnectionsPerAddress", 3);
         }
     }

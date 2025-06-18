@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Neo;
 using Neo.Common.Utility;
+using Neo.Extensions;
 using Neo.VM;
 
 namespace neo3_gui.tests

@@ -11,6 +11,7 @@ using Neo.Common.Consoles;
 using Neo.Common.Storage;
 using Neo.Common.Utility;
 using Neo.Cryptography;
+using Neo.Extensions;
 using Neo.Json;
 using Neo.Models;
 using Neo.Models.Transactions;
@@ -182,7 +183,7 @@ namespace Neo.Services.ApiServices
             ECPoint[] points = null;
             try
             {
-                points = publicKeys.Select(p => ECPoint.DecodePoint(Helper.HexToBytes(p), ECCurve.Secp256r1)).ToArray();
+                points = publicKeys.Select(p => ECPoint.DecodePoint(StringExtensions.HexToBytes(p), ECCurve.Secp256r1)).ToArray();
 
             }
             catch (FormatException ex)

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using Neo.Extensions;
 using Neo.VM;
 
 namespace Neo.Models.Contracts

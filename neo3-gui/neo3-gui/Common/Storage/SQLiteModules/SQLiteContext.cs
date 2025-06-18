@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Neo.Common.Consoles;
+using Neo.Extensions;
 
 namespace Neo.Common.Storage.SQLiteModules
 {

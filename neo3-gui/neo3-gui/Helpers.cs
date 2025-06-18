@@ -41,6 +41,7 @@ using Neo.Wallets;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using VmArray = Neo.VM.Types.Array;
 using Pointer = Neo.VM.Types.Pointer;
+using Neo.Extensions;
 
 namespace Neo
 {

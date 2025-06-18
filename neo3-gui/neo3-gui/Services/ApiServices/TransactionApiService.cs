@@ -6,6 +6,7 @@ using Akka.Actor;
 using Neo.Common.Consoles;
 using Neo.Common.Storage;
 using Neo.Common.Utility;
+using Neo.Extensions;
 using Neo.IO;
 using Neo.Ledger;
 using Neo.Models;

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Neo;
 using Neo.Common.Storage;
+using Neo.Extensions;
 using Neo.Models;
 using Neo.SmartContract.Native;
 
