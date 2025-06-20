@@ -141,6 +141,7 @@
     "load more": "Load More",
     "size": "Size",
     "syncing": "Syncing",
+    "txsyncing": "Tx Syncing",
     "time": "Time"
   },
   "contract": {

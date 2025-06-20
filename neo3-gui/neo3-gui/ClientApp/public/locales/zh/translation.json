@@ -141,6 +141,7 @@
     "load more": "加载更多",
     "size": "大小",
     "syncing": "区块同步中",
+    "txsyncing": "交易同步中",
     "time": "时间"
   },
   "contract": {
