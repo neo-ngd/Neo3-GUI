@@ -14,16 +14,22 @@ const { Text } = Typography;
 class Sync extends React.Component {
   render() {
     const { t } = this.props;
-    const { syncHeight, headerHeight } = this.props.blockSyncStore;
+    const { scanHeight, syncHeight, headerHeight } = this.props.blockSyncStore;
     return (
       <div className="ml3 mb0">
         {headerHeight < 0 ? (
           <Text className="t-normal bold"> - / - {t("common.connecting")}</Text>
         ) : (
-          <Text className="t-normal bold">
-            {" "}
-            {syncHeight} / {headerHeight} {t("common.syncing")}
-          </Text>
+          <>
+            <Text className="t-normal bold">
+              {syncHeight} / {headerHeight} {t("common.syncing")}
+            </Text>
+            <SyncOutlined className="ml3" type="sync" spin />
+            <br />
+            <Text className="t-normal bold">
+              {scanHeight} / {headerHeight} {t("common.txsyncing")}
+            </Text>
+          </>
         )}
         <SyncOutlined className="ml3" type="sync" spin />
       </div>

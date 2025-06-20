@@ -23,7 +23,11 @@ namespace Neo.Common.Scanners
         private TrackDB _db = new TrackDB();
         private LevelDbContext _levelDb = new LevelDbContext();
         private bool _running = true;
-        private uint _scanHeight = 0;
+        private static uint _scanHeight = 0;
+        public static uint ScanHeight
+        {
+            get { return _scanHeight; }
+        }
 
         private uint _lastHeight = 0;
         private DateTime _lastTime;
