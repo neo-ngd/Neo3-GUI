@@ -49,7 +49,21 @@ namespace Neo.Common
                       }
                       catch (WebSocketException e)
                       {
-                          Console.WriteLine(e);
+                          // Log only if not a normal close
+                          if (webSocket.State != WebSocketState.Closed && webSocket.State != WebSocketState.Aborted)
+                          {
+                              Console.WriteLine($"WebSocket error in PushLoop: {e.Message}");
+                          }
+                          hub.Remove(client);
+                      }
+                      catch (ObjectDisposedException)
+                      {
+                          // Socket was disposed, this is normal during shutdown
+                          hub.Remove(client);
+                      }
+                      catch (Exception ex)
+                      {
+                          Console.WriteLine($"Unexpected error in PushLoop: {ex}");
                           hub.Remove(client);
                       }
                   });

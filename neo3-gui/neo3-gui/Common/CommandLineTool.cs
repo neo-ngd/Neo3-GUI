@@ -55,20 +55,20 @@ namespace Neo.Common
         public static Process Run(string command, string workDirectory = "", Action<string> receiveOutput = null)
         {
             Process p = new Process();
-            //设置要启动的应用程序
+            //Set the application to start
             p.StartInfo.FileName = shell;
             p.StartInfo.WorkingDirectory = workDirectory;
-            //是否使用操作系统shell启动
+            //Whether to use operating system shell to start
             p.StartInfo.UseShellExecute = false;
-            // 接受来自调用程序的输入信息
+            //Accept input information from the calling program
             p.StartInfo.RedirectStandardInput = true;
-            //输出信息
+            //Output information
             p.StartInfo.RedirectStandardOutput = true;
-            // 输出错误
+            //Output errors
             p.StartInfo.RedirectStandardError = true;
             //p.StartInfo.StandardOutputEncoding=Encoding.Unicode;
             ;
-            //不显示程序窗口
+            //Do not show program window
             //p.StartInfo.CreateNoWindow = true;
             p.OutputDataReceived += (s, r) =>
             {
@@ -81,7 +81,7 @@ namespace Neo.Common
                 //Console.WriteLine(r.Data);
                 //receiveOutput?.Invoke(r.Data);
             };
-            //启动程序
+            //Start the program
             p.Start();
             p.StandardInput.WriteLine(command);
             p.BeginOutputReadLine();

@@ -21,6 +21,11 @@ namespace Neo.Models.Jobs
             uint scanHeight = ExecuteResultScanner.ScanHeight;
             uint height = this.GetCurrentHeight();
             uint headerHeight = this.GetCurrentHeaderHeight();
+
+            // LocalNode may not be initialized yet during early startup; handle null safely.
+            var localNode = this.GetDefaultLocalNode();
+            int connectedCount = localNode?.ConnectedCount ?? 0;
+
             return new WsMessage()
             {
                 MsgType = WsMessageType.Push,
@@ -30,7 +35,7 @@ namespace Neo.Models.Jobs
                     ScanHeight = scanHeight,
                     SyncHeight = height,
                     HeaderHeight = headerHeight,
-                    ConnectedCount = this.GetDefaultLocalNode().ConnectedCount
+                    ConnectedCount = connectedCount
                 }
             };
         }

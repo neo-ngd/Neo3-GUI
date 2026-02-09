@@ -122,7 +122,7 @@ namespace Neo.Common.Consoles
                     blocksToImport.Add(blocksBeingImported.Current);
                 }
                 if (blocksToImport.Count == 0) break;
-                await NeoSystem.Blockchain.Ask<Blockchain.ImportCompleted>(new Blockchain.Import { Blocks = blocksToImport });
+                await NeoSystem.Blockchain.Ask<Blockchain.ImportCompleted>(new Blockchain.Import(blocksToImport));
                 if (NeoSystem is null) return;
             }
         }
@@ -368,8 +368,9 @@ namespace Neo.Common.Consoles
             BigInteger gas = BigInteger.Zero;
             var snapshot = NeoSystem.StoreView;
             uint height = NativeContract.Ledger.CurrentIndex(snapshot) + 1;
+            using var engine = ApplicationEngine.Create(TriggerType.Application, null, snapshot, null, NeoSystem.Settings);
             foreach (UInt160 account in CurrentWallet.GetAccounts().Select(p => p.ScriptHash))
-                gas += NativeContract.NEO.UnclaimedGas(snapshot, account, height);
+                gas += NativeContract.NEO.UnclaimedGas(engine, account, height);
             Console.WriteLine($"Unclaimed gas: {new BigDecimal(gas, NativeContract.GAS.Decimals)}");
             return true;
         }
@@ -448,9 +449,9 @@ namespace Neo.Common.Consoles
             }
         }
 
-        //TODO: 目前没有想到其它安全的方法来保存密码
-        //所以只能暂时手动输入，但如此一来就不能以服务的方式启动了
-        //未来再想想其它办法，比如采用智能卡之类的
+        //TODO: Currently no secure method to save password has been found
+        //So it can only be entered manually for now, which prevents running as a service
+        //Need to find other solutions in the future, such as using smart cards
         private bool OnOpenWalletCommand(string[] args)
         {
             if (args.Length < 3)
