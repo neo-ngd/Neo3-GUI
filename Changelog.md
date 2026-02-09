@@ -11,8 +11,7 @@ Compatible with Neo 3.9.1: [Neo v3.9.1](https://github.com/neo-project/neo/tree/
 
 ### Fixed
 
-+ Fixed WebSocket connection errors by adding state checks before sending data to closed connections
-+ Fixed NullReferenceException in SyncHeightJob when LocalNode is not initialized during startup
++ Fixed scanHeight initial value display issue: when headerHeight is 0, scanHeight should also display as 0 instead of 1
 + Fixed unit test failures:
   - TrackDB_Test.AddTransfer_Test: Fixed invalid TxId format and missing contract entity
   - BlockInvoker_Test and WalletInvoker_Test: Added fallback NeoSystem for test scenarios
