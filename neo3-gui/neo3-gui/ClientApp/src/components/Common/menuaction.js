@@ -28,7 +28,7 @@ const Addressdetail = () => {
       </ul>
       <div className="mt1 mb3 text-c small">
         <p className="mb5 t-light">
-          NeoGUI @ 2024 The Neo Project/ {t("settings.copyright")}
+          NeoGUI @ 2024-2026 The Neo Project/ {t("settings.copyright")}
         </p>
       </div>
     </div>
@@ -172,7 +172,7 @@ const Setting = ({ switchnetwork }) => {
 
       <div className="mt1 mb3 text-c small">
         <p className="mb5 t-light">
-          NeoGUI @ 2024 Neo-Project {t("settings.copyright")}
+          NeoGUI @ 2024-2026 Neo-Project {t("settings.copyright")}
         </p>
         <p>
           <a
