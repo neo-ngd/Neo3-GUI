@@ -244,10 +244,19 @@ namespace Neo.Services.ApiServices
             using ScriptBuilder sb = new ScriptBuilder();
             sb.EmitDynamicCall(para.ContractHash, para.Method, contractParameters);
 
+            // Create test transaction for test mode
+            // Note: CheckWitness only checks Signers, not Witness signatures, so empty witnesses are sufficient
+            var witnesses = new Witness[signers.Count];
+            for (int i = 0; i < witnesses.Length; i++)
+            {
+                witnesses[i] = Witness.Empty;
+            }
+            
             var testTx = new Transaction()
             {
                 Signers = signers.ToArray(),
-                Attributes = new TransactionAttribute[0]
+                Attributes = new TransactionAttribute[0],
+                Witnesses = witnesses
             };
             using ApplicationEngine engine = sb.ToArray().RunTestMode(null, testTx);
 
@@ -560,7 +569,6 @@ namespace Neo.Services.ApiServices
 
 
         #region Private
-
 
         /// <summary>
         /// try to read nef file

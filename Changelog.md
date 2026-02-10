@@ -1,5 +1,27 @@
 ##  [Latest]
 
+Compatible with Neo 3.9.1: [Neo v3.9.1](https://github.com/neo-project/neo/tree/v3.9.1)
+
+### Updated
+
++ Upgraded to Neo 3.9.1 from local submodule
++ Upgraded target framework from .NET 9.0 to .NET 10.0
++ Updated plugin download URLs from neo-modules to neo-node repository
++ Set version to 1.7.0 in project file
+
+### Fixed
+
++ Fixed scanHeight initial value display issue: when headerHeight is 0, scanHeight should also display as 0 instead of 1
++ Fixed unit test failures:
+  - TrackDB_Test.AddTransfer_Test: Fixed invalid TxId format and missing contract entity
+  - BlockInvoker_Test and WalletInvoker_Test: Added fallback NeoSystem for test scenarios
++ Fixed API compatibility issues with Neo 3.9.1:
+  - Updated Blockchain.Import constructor usage
+  - Updated UnclaimedGas and GetExecFeeFactor calls to use ApplicationEngine
+  - Fixed Transaction.Witnesses required property initialization
+
+##  [Previous]
+
 Compatbile with Neo3-preview3: [Neo CLI v3.0.0-preview3](https://github.com/neo-project/neo-node/releases/tag/v3.0.0-preview3)
 
 ### Added

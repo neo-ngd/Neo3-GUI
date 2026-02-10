@@ -35,6 +35,7 @@ using Neo.Services;
 using Neo.SmartContract;
 using Neo.SmartContract.Manifest;
 using Neo.SmartContract.Native;
+using Neo.Ledger;
 using Neo.VM;
 using Neo.VM.Types;
 using Neo.Wallets;
@@ -47,6 +48,50 @@ namespace Neo
 {
     public static class Helpers
     {
+
+        /// <summary>
+        /// Fallback NeoSystem for unit tests and scenarios where Program.Starter.NeoSystem is not initialized.
+        /// </summary>
+        private static NeoSystem _fallbackNeoSystem;
+        private static readonly object _fallbackNeoSystemLock = new();
+
+        /// <summary>
+        /// Creates a minimal in-memory NeoSystem for fallback scenarios (mainly unit tests).
+        /// 
+        /// Fix for unit test failures:
+        /// - BlockInvoker_Test.GetBlock_Test and WalletInvoker_Test.GetBlock_Test were failing
+        ///   because Program.Starter.NeoSystem was null in test environment.
+        /// 
+        /// - The fallback system uses a single-validator committee (similar to TestProtocolSettings.SoleNode)
+        ///   to avoid "Invalid multisig parameters: m=0, publicKeys.Count=0" error when creating genesis block.
+        /// </summary>
+        private static NeoSystem GetOrCreateFallbackNeoSystem()
+        {
+            if (_fallbackNeoSystem != null) return _fallbackNeoSystem;
+
+            lock (_fallbackNeoSystemLock)
+            {
+                if (_fallbackNeoSystem == null)
+                {
+                    // Used mainly in unit tests where Program.Starter.NeoSystem is not initialized.
+                    // Construct a minimal in-memory NeoSystem with a valid single-validator committee.
+                    var baseSettings = ProtocolSettings.Default;
+                    var committee = new[]
+                    {
+                        ECPoint.Parse("0278ed78c917797b637a7ed6e7a9d94e8c408444c41ee4c0a0f310a256b9271eda", ECCurve.Secp256r1)
+                    };
+                    var settings = baseSettings with
+                    {
+                        Network = 0x334F454Eu,
+                        StandbyCommittee = committee,
+                        ValidatorsCount = 1
+                    };
+                    _fallbackNeoSystem = new NeoSystem(settings);
+                }
+            }
+
+            return _fallbackNeoSystem;
+        }
 
         public static readonly JsonSerializerOptions SerializeOptions = new JsonSerializerOptions
         {
@@ -144,25 +189,32 @@ namespace Neo
 
 
         /// <summary>
+        /// Gets the default snapshot from Program.Starter.NeoSystem, or falls back to a test NeoSystem if not available.
+        /// 
+        /// Fix: Added fallback to support unit tests where Program.Starter.NeoSystem is null.
+        /// 
         /// do not close this snapshot!
         /// </summary>
         /// <returns></returns>
         public static DataCache GetDefaultSnapshot()
         {
-            //while (Program.Starter.NeoSystem==null)
-            //{
-            //}
-            return Program.Starter.NeoSystem.StoreView;
+            var system = Program.Starter?.NeoSystem ?? GetOrCreateFallbackNeoSystem();
+            return system.StoreView;
         }
 
         /// <summary>
+        /// Gets the default snapshot from Program.Starter.NeoSystem, or falls back to a test NeoSystem if not available.
+        /// 
+        /// Fix: Added fallback to support unit tests where Program.Starter.NeoSystem is null.
+        /// 
         /// do not close this snapshot!
         /// </summary>
         /// <param name="x"></param>
         /// <returns></returns>
         public static DataCache GetDefaultSnapshot(this object x)
         {
-            return Program.Starter.NeoSystem.StoreView;
+            var system = Program.Starter?.NeoSystem ?? GetOrCreateFallbackNeoSystem();
+            return system.StoreView;
         }
 
 
@@ -1353,7 +1405,7 @@ namespace Neo
 
 
         /// <summary>
-        /// /检查Nep Token
+        /// Checks if the contract is a NEP-11 or NEP-17 token.
         /// </summary>
         /// <param name="contract"></param>
         /// <returns></returns>

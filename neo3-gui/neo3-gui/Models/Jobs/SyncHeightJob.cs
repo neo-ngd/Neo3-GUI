@@ -21,6 +21,11 @@ namespace Neo.Models.Jobs
             uint scanHeight = ExecuteResultScanner.ScanHeight;
             uint height = this.GetCurrentHeight();
             uint headerHeight = this.GetCurrentHeaderHeight();
+            // If headerHeight is 0, scanHeight should also be 0 (not started yet)
+            if (headerHeight == 0 && scanHeight > 0)
+            {
+                scanHeight = 0;
+            }
             return new WsMessage()
             {
                 MsgType = WsMessageType.Push,
